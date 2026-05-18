@@ -1,8 +1,21 @@
-
-# Playwright
+# Node modules (huge folders created by npm install)
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+
+# Local Environment variables (containing passwords, keys)
+.env
+
+# Playwright Test results (screenshots, videos, traces)
+test-results/
+playwright-report/
+allure-results/
+allure-report/
+screenshots/
+videos/
+traces/
+reports/
+
+# IDE files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
