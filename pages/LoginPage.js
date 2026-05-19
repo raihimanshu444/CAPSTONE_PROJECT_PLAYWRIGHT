@@ -1,9 +1,9 @@
 class LoginPage {
   constructor(page) {
     this.page = page;
-    this.emailInput = page.getByPlaceholder('E-Mail Address');
-    this.passwordInput = page.getByPlaceholder('Password');
-    this.loginButton = page.getByRole('button', { name: 'Login' });
+    this.emailInput = page.locator('form[action*="login"] input[name="email"]');
+    this.passwordInput = page.locator('form[action*="login"] input[name="password"]');
+    this.loginButton = page.locator('form[action*="login"] input[type="submit"]');
   }
 
   async navigate() {
@@ -11,8 +11,8 @@ class LoginPage {
   }
 
   async login(email, password) {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
+    if (email !== undefined) await this.emailInput.fill(email);
+    if (password !== undefined) await this.passwordInput.fill(password);
     await this.loginButton.click();
   }
 }

@@ -38,11 +38,22 @@ class RegisterPage {
   }
 
   async getSuccessMessage() {
-    return await this.successHeader.textContent();
+    const text = await this.successHeader.textContent();
+    return text ? text.trim() : '';
   }
 
   async getErrorMessage() {
-    return await this.errorAlert.textContent();
+    const alertOrFieldError = this.page.locator('.alert-dismissible, .text-danger').first();
+    await alertOrFieldError.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+    
+    const alertVisible = await this.errorAlert.isVisible();
+    if (alertVisible) {
+      const text = await this.errorAlert.textContent();
+      return text ? text.trim() : '';
+    }
+    const fieldError = this.page.locator('.text-danger').first();
+    const text = await fieldError.textContent();
+    return text ? text.trim() : '';
   }
 }
 
