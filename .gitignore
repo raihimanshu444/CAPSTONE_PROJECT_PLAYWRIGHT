@@ -19,3 +19,7 @@ reports/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Private Study guides
+SYNOPSIS.md
+
