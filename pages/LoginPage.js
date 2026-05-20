@@ -4,6 +4,7 @@ class LoginPage {
     this.emailInput = page.locator('form[action*="login"] input[name="email"]');
     this.passwordInput = page.locator('form[action*="login"] input[name="password"]');
     this.loginButton = page.locator('form[action*="login"] input[type="submit"]');
+    this.errorAlert = page.locator('.alert-dismissible');
   }
 
   async navigate() {

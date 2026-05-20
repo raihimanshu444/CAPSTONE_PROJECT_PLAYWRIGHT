@@ -1,7 +1,7 @@
 const { test, expect } = require('../fixtures/pageFixture');
 const { HelperUtils } = require('../utils/HelperUtils');
 
-test.describe('E-Commerce Registration Module', () => {
+test.describe('Module 01 - Registration', () => {
   test.beforeEach(async ({ registerPage }) => {
     await registerPage.navigate();
   });
@@ -118,22 +118,19 @@ test.describe('E-Commerce Login & Session Module', () => {
   test('TC_ATH_009 - Should reject login and display alert when E-Mail field is blank', async ({ loginPage }) => {
     await loginPage.navigate();
     await loginPage.login('', 'SomePassword123!');
-    const errorAlert = loginPage.page.locator('.alert-dismissible');
-    await expect(errorAlert).toHaveText(/Warning: (No match for E-Mail Address and\/or Password\.|Your account has exceeded allowed number of login attempts\.)/);
+    await expect(loginPage.errorAlert).toHaveText(/Warning: (No match for E-Mail Address and\/or Password\.|Your account has exceeded allowed number of login attempts\.)/);
   });
 
   test('TC_ATH_010 - Should reject login and display alert when Password field is blank', async ({ loginPage }) => {
     await loginPage.navigate();
     await loginPage.login(process.env.TEST_USER_EMAIL, '');
-    const errorAlert = loginPage.page.locator('.alert-dismissible');
-    await expect(errorAlert).toHaveText(/Warning: (No match for E-Mail Address and\/or Password\.|Your account has exceeded allowed number of login attempts\.)/);
+    await expect(loginPage.errorAlert).toHaveText(/Warning: (No match for E-Mail Address and\/or Password\.|Your account has exceeded allowed number of login attempts\.)/);
   });
 
   test('TC_ATH_011 - Should reject login and display alert for incorrect password credential values', async ({ loginPage }) => {
     await loginPage.navigate();
     await loginPage.login(process.env.TEST_USER_EMAIL, 'WrongPasswordVal!');
-    const errorAlert = loginPage.page.locator('.alert-dismissible');
-    await expect(errorAlert).toHaveText(/Warning: (No match for E-Mail Address and\/or Password\.|Your account has exceeded allowed number of login attempts\.)/);
+    await expect(loginPage.errorAlert).toHaveText(/Warning: (No match for E-Mail Address and\/or Password\.|Your account has exceeded allowed number of login attempts\.)/);
   });
 
   test('TC_ATH_012 - Should request password recovery recovery link successfully', async ({ registerPage, page }) => {
