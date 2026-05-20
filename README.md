@@ -12,6 +12,7 @@ This is a professional, enterprise-grade E-Commerce Automation Framework built u
 *   **Parallel Multi-Browser Execution:** Fully parallelized testing on Chromium and WebKit (Safari).
 *   **Dotenv Environment Support:** Externalized configuration for base URLs and credentials in a secure env file.
 *   **Rich Interactive Reporting:** Fully integrated with Allure Reporting and standard Playwright HTML reports.
+*   **Live HTML Verified Locators:** All POM locators are verified directly against live site HTML source, eliminating brittle guessed selectors.
 
 ---
 
@@ -28,14 +29,21 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 
 ### Day 2: Authentication and Session Testing Module
 *   Created `RegisterPage` POM class with automated input form handlers and visual wait synchronization states.
-*   Developed comprehensive test suite in `auth.spec.js` running 30 validation tests.
+*   Developed comprehensive test suite in `auth.spec.js` running 15 validation tests across Registration and Login.
 *   Implemented Dynamic User Provisioning to register unique users on-the-fly, completely bypassing sandbox lockout limits.
 *   Refactored LoginPage locators to use form-isolated container boundaries (`form[action*="login"]`), resolving selector collisions.
 *   Designed regex-tolerant warning alert assertions inside session scripts to handle playground typos and server rate warnings.
 *   Increased page navigation and action timeouts inside Playwright configurations to 30 seconds to support network load latency.
 
-### Day 3: [Placeholder for Next Module]
-*   To be updated on Day 3 execution.
+### Day 3: Homepage, Search & Catalog Modules + Auth Cleanup
+*   Rewrote `HomePage.js` POM with every locator verified directly from live site HTML source — eliminated all guessed selectors.
+*   Added `logoLink` (the clickable anchor) alongside `logo` (the image) to enable reliable navigation testing.
+*   Built `homepage.spec.js` with 15 clean, sequential tests (TC_NAV_001–015) covering logo, search bar, navigation links, drawers, cart, compare, wishlist, and logo return navigation.
+*   Built `SearchPage.js` POM from scratch using classes verified from the live search results page HTML (`content-products`, `content-sort-by`, `content-limit`, `#button-search`, `#grid-view`, `#list-view`).
+*   Built `search.spec.js` with 15 clean tests (TC_SCH_001–015) covering exact search, partial search, no results, URL verification, case insensitivity, special characters, sort/limit visibility, grid/list view toggles.
+*   Added `errorAlert` locator to `LoginPage.js` POM — tests now use `loginPage.errorAlert` instead of bypassing POM with inline locators.
+*   Cleaned up `auth.spec.js` — fixed inline `loginPage.page.locator()` calls in TC_ATH_009, 010, 011 to use POM property.
+*   All changes committed in 3 clean, logically separated Git commits.
 
 ---
 
@@ -46,11 +54,14 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 ├── fixtures/                # Extended test runner with custom POM fixtures
 │   └── pageFixture.js       # Auto-injection page fixtures file
 ├── pages/                   # Page Object Model classes
-│   ├── HomePage.js          # Locators/Actions for Homepage
+│   ├── HomePage.js          # Locators/Actions for Homepage & Navigation
 │   ├── LoginPage.js         # Locators/Actions for Login page
-│   └── RegisterPage.js      # Locators/Actions for Register page
+│   ├── RegisterPage.js      # Locators/Actions for Register page
+│   └── SearchPage.js        # Locators/Actions for Search & Catalog page
 ├── tests/                   # Automation Test Specification files
-│   └── auth.spec.js         # Authentication and session test specifications
+│   ├── auth.spec.js         # Module 01 - Authentication (15 tests)
+│   ├── homepage.spec.js     # Module 02 - Homepage & Navigation (15 tests)
+│   └── search.spec.js       # Module 03 - Product Catalog & Search (15 tests)
 ├── utils/                   # Shared helper utilities
 │   └── HelperUtils.js       # Dynamic test data generator
 ├── .env                     # Local environment variables configuration
@@ -106,6 +117,13 @@ npm run test:ui
 ### Playwright Debug Mode
 ```bash
 npm run test:debug
+```
+
+### Run a specific test file
+```bash
+npx playwright test tests/homepage.spec.js --headed --project=chromium
+npx playwright test tests/search.spec.js --headed --project=chromium
+npx playwright test tests/auth.spec.js --headed --project=chromium
 ```
 
 ---

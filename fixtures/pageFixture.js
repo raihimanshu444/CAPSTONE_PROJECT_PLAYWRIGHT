@@ -2,6 +2,7 @@ const base = require('@playwright/test');
 const { LoginPage } = require('../pages/LoginPage');
 const { HomePage } = require('../pages/HomePage');
 const { RegisterPage } = require('../pages/RegisterPage');
+const { SearchPage } = require('../pages/SearchPage');
 
 const test = base.test.extend({
   loginPage: async ({ page }, use) => {
@@ -17,6 +18,11 @@ const test = base.test.extend({
   registerPage: async ({ page }, use) => {
     const registerPage = new RegisterPage(page);
     await use(registerPage);
+  },
+
+  searchPage: async ({ page }, use) => {
+    const searchPage = new SearchPage(page);
+    await use(searchPage);
   }
 });
 
@@ -24,4 +30,3 @@ module.exports = {
   test,
   expect: base.expect
 };
-
