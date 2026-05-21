@@ -45,6 +45,12 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 *   Cleaned up `auth.spec.js` — fixed inline `loginPage.page.locator()` calls in TC_ATH_009, 010, 011 to use POM property.
 *   All changes committed in 3 clean, logically separated Git commits.
 
+### Day 4: Shopping Cart Lifecycle Module
+*   Built `CartPage.js` POM from scratch with robust selectors for PDP add-to-cart button, cart total badge, edit cart link, checkout drawers, and cart review grids.
+*   Added auto-injection setup for `cartPage` fixture in `pageFixture.js`.
+*   Developed `tests/cart.spec.js` with 15 comprehensive tests (TC_CRT_001–015) covering adding items to cart, drawer and badge updates, editing quantities, removing items, stock warning states, and empty cart continue actions.
+*   Integrated high-stability techniques such as prefix quantity matches (`input[name^="quantity"]`), multi-criteria remove buttons, and ultra-fast page body navigation checks (`toHaveURL()`) to avoid element loading timeouts.
+
 ---
 
 ## Project Directory Structure
@@ -54,12 +60,14 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 ├── fixtures/                # Extended test runner with custom POM fixtures
 │   └── pageFixture.js       # Auto-injection page fixtures file
 ├── pages/                   # Page Object Model classes
+│   ├── CartPage.js          # Locators/Actions for Shopping Cart page
 │   ├── HomePage.js          # Locators/Actions for Homepage & Navigation
 │   ├── LoginPage.js         # Locators/Actions for Login page
 │   ├── RegisterPage.js      # Locators/Actions for Register page
 │   └── SearchPage.js        # Locators/Actions for Search & Catalog page
 ├── tests/                   # Automation Test Specification files
 │   ├── auth.spec.js         # Module 01 - Authentication (15 tests)
+│   ├── cart.spec.js         # Module 04 - Shopping Cart Lifecycle (15 tests)
 │   ├── homepage.spec.js     # Module 02 - Homepage & Navigation (15 tests)
 │   └── search.spec.js       # Module 03 - Product Catalog & Search (15 tests)
 ├── utils/                   # Shared helper utilities
@@ -124,6 +132,7 @@ npm run test:debug
 npx playwright test tests/homepage.spec.js --headed --project=chromium
 npx playwright test tests/search.spec.js --headed --project=chromium
 npx playwright test tests/auth.spec.js --headed --project=chromium
+npx playwright test tests/cart.spec.js --headed --project=chromium
 ```
 
 ---
