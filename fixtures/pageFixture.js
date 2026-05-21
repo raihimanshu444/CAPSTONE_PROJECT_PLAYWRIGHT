@@ -3,6 +3,7 @@ const { LoginPage } = require('../pages/LoginPage');
 const { HomePage } = require('../pages/HomePage');
 const { RegisterPage } = require('../pages/RegisterPage');
 const { SearchPage } = require('../pages/SearchPage');
+const { CartPage } = require('../pages/CartPage');
 
 const test = base.test.extend({
   loginPage: async ({ page }, use) => {
@@ -23,6 +24,11 @@ const test = base.test.extend({
   searchPage: async ({ page }, use) => {
     const searchPage = new SearchPage(page);
     await use(searchPage);
+  },
+
+  cartPage: async ({ page }, use) => {
+    const cartPage = new CartPage(page);
+    await use(cartPage);
   }
 });
 
