@@ -4,6 +4,7 @@ const { HomePage } = require('../pages/HomePage');
 const { RegisterPage } = require('../pages/RegisterPage');
 const { SearchPage } = require('../pages/SearchPage');
 const { CartPage } = require('../pages/CartPage');
+const { WishlistPage } = require('../pages/WishlistPage');
 
 const test = base.test.extend({
   loginPage: async ({ page }, use) => {
@@ -29,6 +30,11 @@ const test = base.test.extend({
   cartPage: async ({ page }, use) => {
     const cartPage = new CartPage(page);
     await use(cartPage);
+  },
+
+  wishlistPage: async ({ page }, use) => {
+    const wishlistPage = new WishlistPage(page);
+    await use(wishlistPage);
   }
 });
 
