@@ -51,6 +51,24 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 *   Developed `tests/cart.spec.js` with 15 comprehensive tests (TC_CRT_001–015) covering adding items to cart, drawer and badge updates, editing quantities, removing items, stock warning states, and empty cart continue actions.
 *   Integrated high-stability techniques such as prefix quantity matches (`input[name^="quantity"]`), multi-criteria remove buttons, and ultra-fast page body navigation checks (`toHaveURL()`) to avoid element loading timeouts.
 
+### Day 5: Wishlist Lifecycle Module
+*   Built `WishlistPage.js` POM from scratch with locators for wishlist table grids, individual row details, and action handlers like "Add to Cart" and "Remove" from wishlist.
+*   Added auto-injection setup for `wishlistPage` fixture in `pageFixture.js`.
+*   Developed `tests/wishlist.spec.js` with 13 comprehensive tests (TC_WIS_001–013) covering unauthorized page redirection, Empty Wishlist rendering, UI / API wishlist item additions, duplicates, badge counts, item removals, account dashboard access, and cart transfer behaviors.
+*   Integrated high-stability techniques including dynamic API wishlist seeding (`route=account/wishlist/add` post method) and per-test `loginAs()` helpers in `serial` mode to avoid flaky dependencies and visual latency.
+
+### Day 6: Checkout & Payment Module
+*   Built `CheckoutPage.js` POM supporting shipping and billing fields, payment choices (COD), flat rate courier option, off-canvas cart drawer link, and final confirm order review table.
+*   Implemented a resilient returning-user address toggle (`ensureBillingFormVisible`) that checks the "New Address" radio button to guarantee form visibility even when users already have a saved profile address.
+*   Developed `tests/checkout.spec.js` with 15 comprehensive tests (TC_CHK_001–015) covering address form validations, country-to-zone AJAX dropdown triggers, empty cart redirects, stepper backward navigations, and complete order placement redirects.
+*   Integrated a highly robust click-retry mechanism within `handleConfirmPage` and off-canvas cart drawer toggles to completely eliminate test flakiness on slower cloud-based sandboxes.
+
+### Day 7: User Dashboard Module
+*   Built `DashboardPage.js` POM with highly optimized and scoped selectors for profile editing, address book, password management, and account log lists (reward points, downloads).
+*   Developed `tests/userDashboard.spec.js` with 13 functional tests (TC_DSH_001–013) covering profile first name edits, invalid email format checks, Address Book CRUD operations, dynamic newsletter updates, and breadcrumb redirection.
+*   Designed a self-healing Address Book deletion flow that automatically adds a temporary secondary address to satisfy database limits before executing a delete operation.
+*   Implemented robust password change restoration checks to avoid breaking subsequent tests in serial test runners, and fixed mixed legacy text/CSS locator syntax issues to ensure zero flakiness.
+
 ---
 
 ## Project Directory Structure
@@ -61,15 +79,21 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 │   └── pageFixture.js       # Auto-injection page fixtures file
 ├── pages/                   # Page Object Model classes
 │   ├── CartPage.js          # Locators/Actions for Shopping Cart page
+│   ├── CheckoutPage.js      # Locators/Actions for Checkout & Payment page
+│   ├── DashboardPage.js     # Locators/Actions for User Dashboard page
 │   ├── HomePage.js          # Locators/Actions for Homepage & Navigation
 │   ├── LoginPage.js         # Locators/Actions for Login page
 │   ├── RegisterPage.js      # Locators/Actions for Register page
-│   └── SearchPage.js        # Locators/Actions for Search & Catalog page
+│   ├── SearchPage.js        # Locators/Actions for Search & Catalog page
+│   └── WishlistPage.js      # Locators/Actions for Wishlist page
 ├── tests/                   # Automation Test Specification files
 │   ├── auth.spec.js         # Module 01 - Authentication (15 tests)
 │   ├── cart.spec.js         # Module 04 - Shopping Cart Lifecycle (15 tests)
+│   ├── checkout.spec.js     # Module 06 - Checkout & Payment (15 tests)
 │   ├── homepage.spec.js     # Module 02 - Homepage & Navigation (15 tests)
-│   └── search.spec.js       # Module 03 - Product Catalog & Search (15 tests)
+│   ├── search.spec.js       # Module 03 - Product Catalog & Search (15 tests)
+│   ├── userDashboard.spec.js # Module 07 - User Dashboard (13 tests)
+│   └── wishlist.spec.js     # Module 05 - Wishlist Lifecycle (13 tests)
 ├── utils/                   # Shared helper utilities
 │   └── HelperUtils.js       # Dynamic test data generator
 ├── .env                     # Local environment variables configuration
@@ -133,6 +157,9 @@ npx playwright test tests/homepage.spec.js --headed --project=chromium
 npx playwright test tests/search.spec.js --headed --project=chromium
 npx playwright test tests/auth.spec.js --headed --project=chromium
 npx playwright test tests/cart.spec.js --headed --project=chromium
+npx playwright test tests/wishlist.spec.js --headed --project=chromium
+npx playwright test tests/checkout.spec.js --headed --project=chromium
+npx playwright test tests/userDashboard.spec.js --headed --project=chromium
 ```
 
 ---
