@@ -69,6 +69,11 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 *   Designed a self-healing Address Book deletion flow that automatically adds a temporary secondary address to satisfy database limits before executing a delete operation.
 *   Implemented robust password change restoration checks to avoid breaking subsequent tests in serial test runners, and fixed mixed legacy text/CSS locator syntax issues to ensure zero flakiness.
 
+### Day 8: Customer Support Module
+*   Built `ContactPage.js` POM encapsulating the Contact Us form fields (`nameInput`, `emailInput`, `enquiryInput`), actions (`fillForm`, `fillAndSubmit`, `submit`), store info selectors (`telephoneSection`, `telLink`), and the success page `continueLink`.
+*   Developed `tests/support.spec.js` with 13 comprehensive tests (TC_SUP_001–013) covering page load verification, successful form submission, empty field validations, short/excess enquiry limits, invalid email format blocking, double-submit protection, print layout rendering, success page redirection, and breadcrumb navigation.
+*   Replaced a flaky footer Site Map test (caused by Maza theme's JS-rendered mega-footer) with a stable breadcrumb navigation test that uses the already-loaded contact page, eliminating the `beforeEach` timeout flakiness entirely.
+
 ---
 
 ## Project Directory Structure
@@ -80,6 +85,7 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 ├── pages/                   # Page Object Model classes
 │   ├── CartPage.js          # Locators/Actions for Shopping Cart page
 │   ├── CheckoutPage.js      # Locators/Actions for Checkout & Payment page
+│   ├── ContactPage.js       # Locators/Actions for Customer Support Contact page
 │   ├── DashboardPage.js     # Locators/Actions for User Dashboard page
 │   ├── HomePage.js          # Locators/Actions for Homepage & Navigation
 │   ├── LoginPage.js         # Locators/Actions for Login page
@@ -92,6 +98,7 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 │   ├── checkout.spec.js     # Module 06 - Checkout & Payment (15 tests)
 │   ├── homepage.spec.js     # Module 02 - Homepage & Navigation (15 tests)
 │   ├── search.spec.js       # Module 03 - Product Catalog & Search (15 tests)
+│   ├── support.spec.js      # Module 08 - Customer Support (13 tests)
 │   ├── userDashboard.spec.js # Module 07 - User Dashboard (13 tests)
 │   └── wishlist.spec.js     # Module 05 - Wishlist Lifecycle (13 tests)
 ├── utils/                   # Shared helper utilities
@@ -160,6 +167,7 @@ npx playwright test tests/cart.spec.js --headed --project=chromium
 npx playwright test tests/wishlist.spec.js --headed --project=chromium
 npx playwright test tests/checkout.spec.js --headed --project=chromium
 npx playwright test tests/userDashboard.spec.js --headed --project=chromium
+npx playwright test tests/support.spec.js --headed --project=chromium
 ```
 
 ---
