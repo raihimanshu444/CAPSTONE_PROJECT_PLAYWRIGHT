@@ -1,13 +1,14 @@
 const base = require('@playwright/test');
 
-const { LoginPage } = require('../pages/LoginPage');
-const { HomePage } = require('../pages/HomePage');
+const { LoginPage }    = require('../pages/LoginPage');
+const { HomePage }     = require('../pages/HomePage');
 const { RegisterPage } = require('../pages/RegisterPage');
-const { SearchPage } = require('../pages/SearchPage');
-const { CartPage } = require('../pages/CartPage');
+const { SearchPage }   = require('../pages/SearchPage');
+const { CartPage }     = require('../pages/CartPage');
 const { WishlistPage } = require('../pages/WishlistPage');
 const { CheckoutPage } = require('../pages/CheckoutPage');
 const { DashboardPage } = require('../pages/DashboardPage');
+const { ContactPage }  = require('../pages/ContactPage');
 
 const test = base.test.extend({
 
@@ -104,6 +105,18 @@ const test = base.test.extend({
         const dashboardPage = new DashboardPage(page);
 
         await use(dashboardPage);
+
+    },
+
+    // ==================================================
+    // CONTACT PAGE
+    // ==================================================
+
+    contactPage: async ({ page }, use) => {
+
+        const contactPage = new ContactPage(page);
+
+        await use(contactPage);
 
     }
 
