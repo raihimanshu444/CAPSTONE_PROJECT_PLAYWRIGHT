@@ -1,5 +1,8 @@
 # Enterprise E-Commerce Playwright Automation Framework
 
+> [!TIP]
+> 📊 **Live Allure Test Report**: View the real-time, interactive test execution dashboard deployed on GitHub Pages here: **[https://raihimanshu444.github.io/CAPSTONE_PROJECT_PLAYWRIGHT/](https://raihimanshu444.github.io/CAPSTONE_PROJECT_PLAYWRIGHT/)**
+
 This is a professional, enterprise-grade E-Commerce Automation Framework built using Playwright and Vanilla JavaScript. It is designed to test the LambdaTest E-Commerce Playground application comprehensively with high execution speed, modular architecture, and maximum test stability.
 
 ---
@@ -74,6 +77,12 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 *   Developed `tests/support.spec.js` with 13 comprehensive tests (TC_SUP_001–013) covering page load verification, successful form submission, empty field validations, short/excess enquiry limits, invalid email format blocking, double-submit protection, print layout rendering, success page redirection, and breadcrumb navigation.
 *   Replaced a flaky footer Site Map test (caused by Maza theme's JS-rendered mega-footer) with a stable breadcrumb navigation test that uses the already-loaded contact page, eliminating the `beforeEach` timeout flakiness entirely.
 
+### Day 9: Order History & Management Module
+*   Built `OrderPage.js` POM encapsulating element selectors and page actions for Order History list, Order Details receipts, Product Return forms, and Return History requests.
+*   Developed `tests/order.spec.js` with 13 exhaustive functional tests (TC_ORD_001–013) covering order summary details, dynamically filtered search, print layout invoice loading, cart item recovery, product return submissions, comments boxes, and return ticket history lists.
+*   Implemented robust setups using a `beforeAll` registration hook that checks out an iPod Nano (Product ID 47, no option configs required) to guarantee stable, pre-populated history rows.
+*   Maligned flakiness by programmatically mocking `window.print` on invoice templates to prevent blocking browser system printer popups.
+
 ---
 
 ## Project Directory Structure
@@ -89,6 +98,7 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 │   ├── DashboardPage.js     # Locators/Actions for User Dashboard page
 │   ├── HomePage.js          # Locators/Actions for Homepage & Navigation
 │   ├── LoginPage.js         # Locators/Actions for Login page
+│   ├── OrderPage.js         # Locators/Actions for Order History & Return page
 │   ├── RegisterPage.js      # Locators/Actions for Register page
 │   ├── SearchPage.js        # Locators/Actions for Search & Catalog page
 │   └── WishlistPage.js      # Locators/Actions for Wishlist page
@@ -97,6 +107,7 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 │   ├── cart.spec.js         # Module 04 - Shopping Cart Lifecycle (15 tests)
 │   ├── checkout.spec.js     # Module 06 - Checkout & Payment (15 tests)
 │   ├── homepage.spec.js     # Module 02 - Homepage & Navigation (15 tests)
+│   ├── order.spec.js        # Module 09 - Order History & Management (13 tests)
 │   ├── search.spec.js       # Module 03 - Product Catalog & Search (15 tests)
 │   ├── support.spec.js      # Module 08 - Customer Support (13 tests)
 │   ├── userDashboard.spec.js # Module 07 - User Dashboard (13 tests)
@@ -168,6 +179,7 @@ npx playwright test tests/wishlist.spec.js --headed --project=chromium
 npx playwright test tests/checkout.spec.js --headed --project=chromium
 npx playwright test tests/userDashboard.spec.js --headed --project=chromium
 npx playwright test tests/support.spec.js --headed --project=chromium
+npx playwright test tests/order.spec.js --headed --project=chromium
 ```
 
 ---
