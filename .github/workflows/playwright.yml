@@ -1,24 +1,141 @@
-name: Playwright Tests
+name: Playwright Tests & Allure Report
+
 on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
+
+  # ==============================================================
+  # JOB 1: RUN TESTS (split into 3 parallel shards for speed)
+  # ==============================================================
   test:
+    name: "Run Tests (Shard ${{ matrix.shard_index }}/3)"
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false           # Don't cancel other shards if one shard fails
+      matrix:
+        shard_index: [1, 2, 3]   # 3 parallel runners
+
+    env:
+      CI: true
+      # Inject .env variables from GitHub Secrets
+      # (Add these in: Repo Settings > Secrets and variables > Actions)
+      BASE_URL: ${{ secrets.BASE_URL }}
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+
+      # ── Step 1: Pull source code ──────────────────────────────
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ── Step 2: Install Node.js (LTS) ─────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      # ── Step 3: Install project dependencies ──────────────────
+      - name: Install Dependencies
+        run: npm ci
+
+      # ── Step 4: Download Chromium browser for Playwright ──────
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      # ── Step 5: Execute tests for this shard ──────────────────
+      - name: Run Playwright Tests (Shard ${{ matrix.shard_index }}/3)
+        run: npm run test:ci -- --shard=${{ matrix.shard_index }}/3
+        continue-on-error: true   # Always upload results even if tests fail
+
+      # ── Step 6: Save raw Allure results as artifact ───────────
+      - name: Upload Allure Results (Shard ${{ matrix.shard_index }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-shard-${{ matrix.shard_index }}
+          path: allure-results
+          if-no-files-found: warn
+          retention-days: 14
+
+  # ==============================================================
+  # JOB 2: MERGE RESULTS & PUBLISH ALLURE REPORT
+  # Runs after ALL 3 shards finish (pass or fail)
+  # ==============================================================
+  report:
+    name: "Generate & Publish Allure Report"
+    if: ${{ always() }}
+    needs: [test]
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ── Step 1: Pull source code ──────────────────────────────
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ── Step 2: Install Node.js (LTS) ─────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      # ── Step 3: Install project dependencies ──────────────────
+      - name: Install Dependencies
+        run: npm ci
+
+      # ── Step 4: Download results from all 3 shards & merge ────
+      - name: Download All Allure Results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-shard-*
+          merge-multiple: true
+          path: allure-results
+
+      # ── Step 5: Ensure the results directory exists ───────────
+      - name: Ensure Allure Results Directory
+        run: mkdir -p allure-results
+
+      # ── Step 6: Install Allure CLI and generate HTML report ───
+      - name: Install Allure CLI
+        run: npm install -g allure-commandline
+
+      - name: Generate Allure Report
+        run: npm run allure:generate
+        continue-on-error: true
+
+      # ── Step 7: Upload HTML report as downloadable artifact ───
+      - name: Upload Allure HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          if-no-files-found: warn
+          retention-days: 14
+
+      # ── Step 8: Deploy to GitHub Pages (main/master push only) ─
+      - name: Deploy Allure Report to GitHub Pages
+        if: always() && github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master')
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report
+        continue-on-error: true
