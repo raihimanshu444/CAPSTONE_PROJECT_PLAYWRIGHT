@@ -1,1 +1,0 @@
-Delete Account link not present on this sandbox environment.
