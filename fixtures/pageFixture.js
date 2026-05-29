@@ -9,6 +9,7 @@ const { WishlistPage } = require('../pages/WishlistPage');
 const { CheckoutPage } = require('../pages/CheckoutPage');
 const { DashboardPage } = require('../pages/DashboardPage');
 const { ContactPage }  = require('../pages/ContactPage');
+const { OrderPage }    = require('../pages/OrderPage');
 
 const test = base.test.extend({
 
@@ -117,6 +118,18 @@ const test = base.test.extend({
         const contactPage = new ContactPage(page);
 
         await use(contactPage);
+
+    },
+
+    // ==================================================
+    // ORDER PAGE
+    // ==================================================
+
+    orderPage: async ({ page }, use) => {
+
+        const orderPage = new OrderPage(page);
+
+        await use(orderPage);
 
     }
 
