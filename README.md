@@ -78,10 +78,21 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 *   Replaced a flaky footer Site Map test (caused by Maza theme's JS-rendered mega-footer) with a stable breadcrumb navigation test that uses the already-loaded contact page, eliminating the `beforeEach` timeout flakiness entirely.
 
 ### Day 9: Order History & Management Module
-*   Built `OrderPage.js` POM encapsulating element selectors and page actions for Order History list, Order Details receipts, Product Return forms, and Return History requests.
-*   Developed `tests/order.spec.js` with 13 exhaustive functional tests (TC_ORD_001–013) covering order summary details, dynamically filtered search, print layout invoice loading, cart item recovery, product return submissions, comments boxes, and return ticket history lists.
-*   Implemented robust setups using a `beforeAll` registration hook that checks out an iPod Nano (Product ID 47, no option configs required) to guarantee stable, pre-populated history rows.
-*   Maligned flakiness by programmatically mocking `window.print` on invoice templates to prevent blocking browser system printer popups.
+*   Built `OrderPage.js` POM encapsulating element selectors and page actions for Order History list, Order Details receipts, invoice frames, and Product Return forms.
+*   Added auto-injection setup for `orderPage` fixture in `pageFixture.js`.
+*   Developed `tests/order.spec.js` with 13 exhaustive functional tests (TC_ORD_001–013) covering order summary display, filtered search, invoice print layout, reorder cart transfer, return form field verification, radio selector interactions, form submission, return history, order status validation, and live checkout status confirmation.
+*   Implemented a `beforeAll` registration hook that places a fresh order via API checkout (iPod Nano, Product ID 47) to guarantee a pre-populated order history row for all subsequent tests.
+*   **Key Stability Fix — Return Button Status Gate**: The Maza theme only renders the "Return Product(s)" button for orders in "Complete" status. Fresh test orders are always "Pending", so TC_ORD_006/007/008 were rewritten to navigate **directly** to `route=account/return/add` using confirmed live HTML field IDs (`#input-firstname`, `#input-order-id`, `input[name="return_reason_id"]`) — zero dependency on order status.
+*   **Key Stability Fix — Reorder Same-Page Behavior**: TC_ORD_005's reorder click does NOT navigate to `route=checkout/cart`; it adds items via AJAX and shows a success alert **on the same order info page**. Assertion updated to check for alert visibility or cart badge count increase.
+*   **Key Stability Fix — window.print Interception**: TC_ORD_013 uses `addInitScript()` to inject the `window.print` mock **before** the invoice page loads, ensuring the auto-triggered `onload` print call is captured. Eliminated all selector-based print button approaches that resolved to wrong nav links.
+
+### Day 10: API Interception & Mocking Module
+*   Developed `tests/apiMocking.spec.js` with 13 advanced network-level test cases (TC_API_001–013) validating the application's client-side resilience under mock network environments.
+*   Implemented custom cookie context injection for **Pre-Auth Session Speed Runs** to bypass UI login forms.
+*   Created robust HTTP `500` & `429` rate-limiting simulations and offline connection drop route mocking to verify front-end toast and banner message handling.
+*   Configured third-party analytics and ad script blocker filters that speed up browser rendering and save significant pipeline testing costs.
+*   Mocked dynamic tax rate parameters in cart HTML payloads and payment gateway success redirects, bypassing slow banking API checkouts seamlessly.
+
 
 ---
 
@@ -103,6 +114,7 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 │   ├── SearchPage.js        # Locators/Actions for Search & Catalog page
 │   └── WishlistPage.js      # Locators/Actions for Wishlist page
 ├── tests/                   # Automation Test Specification files
+│   ├── apiMocking.spec.js   # Module 10 - API Interception & Mocking (13 tests)
 │   ├── auth.spec.js         # Module 01 - Authentication (15 tests)
 │   ├── cart.spec.js         # Module 04 - Shopping Cart Lifecycle (15 tests)
 │   ├── checkout.spec.js     # Module 06 - Checkout & Payment (15 tests)
@@ -180,6 +192,7 @@ npx playwright test tests/checkout.spec.js --headed --project=chromium
 npx playwright test tests/userDashboard.spec.js --headed --project=chromium
 npx playwright test tests/support.spec.js --headed --project=chromium
 npx playwright test tests/order.spec.js --headed --project=chromium
+npx playwright test tests/apiMocking.spec.js --headed --project=chromium
 ```
 
 ---
