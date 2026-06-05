@@ -12,10 +12,11 @@ This is a professional, enterprise-grade E-Commerce Automation Framework built u
 *   **Page Object Model (POM):** Clean separation of UI page selectors and action methods from the test scripts.
 *   **Custom Fixtures Injection:** Extended Playwright test runner with automated page object fixtures to eliminate setup boilerplate code.
 *   **Dynamic Test Data Generation:** Static utility class (`HelperUtils`) to generate random names, emails, and phone numbers to prevent duplicate registration errors.
-*   **Parallel Multi-Browser Execution:** Fully parallelized testing on Chromium and WebKit (Safari).
+*   **Chromium-Only Execution:** Configured to run specifically on Desktop Chromium to optimize resources, reduce pipeline execution times, and focus browser-specific validation.
 *   **Dotenv Environment Support:** Externalized configuration for base URLs and credentials in a secure env file.
 *   **Rich Interactive Reporting:** Fully integrated with Allure Reporting and standard Playwright HTML reports.
 *   **Live HTML Verified Locators:** All POM locators are verified directly against live site HTML source, eliminating brittle guessed selectors.
+*   **Core & Addon Module Segregation:** Split the test suite into core modules (run locally/CI) and addon modules (isolated CI pipeline with parallel sharding).
 
 ---
 
@@ -24,7 +25,7 @@ This is a professional, enterprise-grade E-Commerce Automation Framework built u
 This framework is developed in daily milestones as part of the SDET Capstone project.
 
 ### Day 1: Foundational Framework Architecture
-*   Configured multi-browser parallel execution settings inside Playwright master configuration.
+*   Configured parallel execution settings inside Playwright master configuration.
 *   Established Page Object Model (POM) skeleton structures (`LoginPage` and `HomePage`).
 *   Created custom page fixtures in `pageFixture.js` for automatic object injection during test runner lifecycle execution.
 *   Built dynamic programmatic data utility helpers (`HelperUtils.js`) for unique registration inputs.
@@ -68,31 +69,30 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 
 ### Day 7: User Dashboard Module
 *   Built `DashboardPage.js` POM with highly optimized and scoped selectors for profile editing, address book, password management, and account log lists (reward points, downloads).
-*   Developed `tests/userDashboard.spec.js` with 13 functional tests (TC_DSH_001–013) covering profile first name edits, invalid email format checks, Address Book CRUD operations, dynamic newsletter updates, and breadcrumb redirection.
+*   Developed `tests/addon/userDashboard-addon.spec.js` with 13 functional tests (TC_DSH_001–013) covering profile first name edits, invalid email format checks, Address Book CRUD operations, dynamic newsletter updates, and breadcrumb redirection.
 *   Designed a self-healing Address Book deletion flow that automatically adds a temporary secondary address to satisfy database limits before executing a delete operation.
 *   Implemented robust password change restoration checks to avoid breaking subsequent tests in serial test runners, and fixed mixed legacy text/CSS locator syntax issues to ensure zero flakiness.
 
 ### Day 8: Customer Support Module
 *   Built `ContactPage.js` POM encapsulating the Contact Us form fields (`nameInput`, `emailInput`, `enquiryInput`), actions (`fillForm`, `fillAndSubmit`, `submit`), store info selectors (`telephoneSection`, `telLink`), and the success page `continueLink`.
-*   Developed `tests/support.spec.js` with 13 comprehensive tests (TC_SUP_001–013) covering page load verification, successful form submission, empty field validations, short/excess enquiry limits, invalid email format blocking, double-submit protection, print layout rendering, success page redirection, and breadcrumb navigation.
+*   Developed `tests/addon/support-addon.spec.js` with 13 comprehensive tests (TC_SUP_001–013) covering page load verification, successful form submission, empty field validations, short/excess enquiry limits, invalid email format blocking, double-submit protection, print layout rendering, success page redirection, and breadcrumb navigation.
 *   Replaced a flaky footer Site Map test (caused by Maza theme's JS-rendered mega-footer) with a stable breadcrumb navigation test that uses the already-loaded contact page, eliminating the `beforeEach` timeout flakiness entirely.
 
 ### Day 9: Order History & Management Module
 *   Built `OrderPage.js` POM encapsulating element selectors and page actions for Order History list, Order Details receipts, invoice frames, and Product Return forms.
 *   Added auto-injection setup for `orderPage` fixture in `pageFixture.js`.
-*   Developed `tests/order.spec.js` with 13 exhaustive functional tests (TC_ORD_001–013) covering order summary display, filtered search, invoice print layout, reorder cart transfer, return form field verification, radio selector interactions, form submission, return history, order status validation, and live checkout status confirmation.
+*   Developed `tests/addon/order-addon.spec.js` with 13 exhaustive functional tests (TC_ORD_001–013) covering order summary display, filtered search, invoice print layout, reorder cart transfer, return form field verification, radio selector interactions, form submission, return history, order status validation, and live checkout status confirmation.
 *   Implemented a `beforeAll` registration hook that places a fresh order via API checkout (iPod Nano, Product ID 47) to guarantee a pre-populated order history row for all subsequent tests.
 *   **Key Stability Fix — Return Button Status Gate**: The Maza theme only renders the "Return Product(s)" button for orders in "Complete" status. Fresh test orders are always "Pending", so TC_ORD_006/007/008 were rewritten to navigate **directly** to `route=account/return/add` using confirmed live HTML field IDs (`#input-firstname`, `#input-order-id`, `input[name="return_reason_id"]`) — zero dependency on order status.
 *   **Key Stability Fix — Reorder Same-Page Behavior**: TC_ORD_005's reorder click does NOT navigate to `route=checkout/cart`; it adds items via AJAX and shows a success alert **on the same order info page**. Assertion updated to check for alert visibility or cart badge count increase.
 *   **Key Stability Fix — window.print Interception**: TC_ORD_013 uses `addInitScript()` to inject the `window.print` mock **before** the invoice page loads, ensuring the auto-triggered `onload` print call is captured. Eliminated all selector-based print button approaches that resolved to wrong nav links.
 
 ### Day 10: API Interception & Mocking Module
-*   Developed `tests/apiMocking.spec.js` with 13 advanced network-level test cases (TC_API_001–013) validating the application's client-side resilience under mock network environments.
+*   Developed `tests/addon/apiMocking-addon.spec.js` with 13 advanced network-level test cases (TC_API_001–013) validating the application's client-side resilience under mock network environments.
 *   Implemented custom cookie context injection for **Pre-Auth Session Speed Runs** to bypass UI login forms.
 *   Created robust HTTP `500` & `429` rate-limiting simulations and offline connection drop route mocking to verify front-end toast and banner message handling.
 *   Configured third-party analytics and ad script blocker filters that speed up browser rendering and save significant pipeline testing costs.
 *   Mocked dynamic tax rate parameters in cart HTML payloads and payment gateway success redirects, bypassing slow banking API checkouts seamlessly.
-
 
 ---
 
@@ -100,6 +100,9 @@ This framework is developed in daily milestones as part of the SDET Capstone pro
 
 ```text
 CAPSTONE_PROJECT_PLAYWRIGHT/
+├── .github/                 # GitHub Actions CI Configuration
+│   └── workflows/
+│       └── playwright-addon.yml # CI pipeline for all 10 modules (runs on Chromium, 3 parallel shards)
 ├── fixtures/                # Extended test runner with custom POM fixtures
 │   └── pageFixture.js       # Auto-injection page fixtures file
 ├── pages/                   # Page Object Model classes
@@ -114,22 +117,23 @@ CAPSTONE_PROJECT_PLAYWRIGHT/
 │   ├── SearchPage.js        # Locators/Actions for Search & Catalog page
 │   └── WishlistPage.js      # Locators/Actions for Wishlist page
 ├── tests/                   # Automation Test Specification files
-│   ├── apiMocking.spec.js   # Module 10 - API Interception & Mocking (13 tests)
+│   ├── addon/               # Addon Test Modules
+│   │   ├── apiMocking-addon.spec.js   # Module 10 - API Interception & Mocking (13 tests)
+│   │   ├── order-addon.spec.js        # Module 09 - Order History & Management (13 tests)
+│   │   ├── support-addon.spec.js      # Module 08 - Customer Support (13 tests)
+│   │   └── userDashboard-addon.spec.js # Module 07 - User Dashboard (13 tests)
 │   ├── auth.spec.js         # Module 01 - Authentication (15 tests)
 │   ├── cart.spec.js         # Module 04 - Shopping Cart Lifecycle (15 tests)
 │   ├── checkout.spec.js     # Module 06 - Checkout & Payment (15 tests)
 │   ├── homepage.spec.js     # Module 02 - Homepage & Navigation (15 tests)
-│   ├── order.spec.js        # Module 09 - Order History & Management (13 tests)
 │   ├── search.spec.js       # Module 03 - Product Catalog & Search (15 tests)
-│   ├── support.spec.js      # Module 08 - Customer Support (13 tests)
-│   ├── userDashboard.spec.js # Module 07 - User Dashboard (13 tests)
 │   └── wishlist.spec.js     # Module 05 - Wishlist Lifecycle (13 tests)
 ├── utils/                   # Shared helper utilities
 │   └── HelperUtils.js       # Dynamic test data generator
 ├── .env                     # Local environment variables configuration
 ├── .gitignore               # Ignored files in Git version tracking
 ├── package.json             # NPM dependencies and runner scripts
-├── playwright.config.js     # Master Playwright configuration file
+├── playwright.config.js     # Master Playwright configuration file (Chromium-only)
 └── README.md                # Project walkthrough and documentation
 ```
 
@@ -150,9 +154,9 @@ Follow these steps to run this framework locally:
     npm install
     ```
 
-3.  **Install the Playwright browsers:**
+3.  **Install the Playwright Chromium browser:**
     ```bash
-    npx playwright install
+    npx playwright install chromium
     ```
 
 ---
@@ -161,17 +165,24 @@ Follow these steps to run this framework locally:
 
 Run the automation suite using the customized NPM scripts:
 
-### Standard Headless Run (All Browsers in Parallel)
+### Run Core Modules (Local / Headless)
+Runs the 6 core specification files (88 tests) locally on Chromium.
 ```bash
-npm run test
+npm run test:core
 ```
 
-### Headed Run (Watch the browser execute tests)
+### Run Core Modules (Local / Headed)
 ```bash
-npm run test:headed
+npm run test:core:headed
 ```
 
-### Playwright Interactive UI Mode (Excellent for debugging)
+### Run Addon Modules (Local / Headless)
+Runs the 4 addon specification files (52 tests) locally on Chromium.
+```bash
+npm run test:addon
+```
+
+### Playwright Interactive UI Mode
 ```bash
 npm run test:ui
 ```
@@ -183,28 +194,43 @@ npm run test:debug
 
 ### Run a specific test file
 ```bash
-npx playwright test tests/homepage.spec.js --headed --project=chromium
-npx playwright test tests/search.spec.js --headed --project=chromium
-npx playwright test tests/auth.spec.js --headed --project=chromium
-npx playwright test tests/cart.spec.js --headed --project=chromium
-npx playwright test tests/wishlist.spec.js --headed --project=chromium
-npx playwright test tests/checkout.spec.js --headed --project=chromium
-npx playwright test tests/userDashboard.spec.js --headed --project=chromium
-npx playwright test tests/support.spec.js --headed --project=chromium
-npx playwright test tests/order.spec.js --headed --project=chromium
-npx playwright test tests/apiMocking.spec.js --headed --project=chromium
+# Core modules
+npx playwright test tests/auth.spec.js --headed
+npx playwright test tests/homepage.spec.js --headed
+npx playwright test tests/search.spec.js --headed
+npx playwright test tests/cart.spec.js --headed
+npx playwright test tests/wishlist.spec.js --headed
+npx playwright test tests/checkout.spec.js --headed
+
+# Addon modules
+npx playwright test tests/addon/userDashboard-addon.spec.js --headed
+npx playwright test tests/addon/support-addon.spec.js --headed
+npx playwright test tests/addon/order-addon.spec.js --headed
+npx playwright test tests/addon/apiMocking-addon.spec.js --headed
 ```
 
 ---
 
-## Generating Reports
+## Generating Reports Locally
 
-### Generate Allure Report
+Allure reports accumulate results over multiple runs. To prevent mixing old test results with fresh runs, follow these steps:
+
+### 1. Clean previous results
+```bash
+rm -rf allure-results allure-report
+```
+
+### 2. Run desired tests
+```bash
+npm run test:core
+```
+
+### 3. Generate HTML Report
 ```bash
 npm run allure:generate
 ```
 
-### Open Allure Report in Web Browser
+### 4. Open Report in Web Browser
 ```bash
 npm run allure:open
 ```

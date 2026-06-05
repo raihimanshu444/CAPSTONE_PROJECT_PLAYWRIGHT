@@ -1,10 +1,9 @@
-name: Addon Tests & Allure Report
+name: Playwright Tests & Allure Report
 
 # ================================================================
-# ADDON CI/CD PIPELINE
-# Runs the 4 addon test modules (User Dashboard, Support,
-# Order History, API Mocking) on GitHub Actions automatically.
-# The core 6 modules are demonstrated locally.
+# FULL CI/CD PIPELINE
+# Runs all 10 modules (140 tests) on GitHub Actions automatically
+# across parallel shards on Chromium, then publishes the Allure Report.
 # ================================================================
 
 on:
@@ -23,10 +22,10 @@ permissions:
 jobs:
 
   # ==============================================================
-  # JOB 1: RUN ADDON TESTS (split into 3 parallel shards for speed)
+  # JOB 1: RUN ALL TESTS (split into 3 parallel shards for speed)
   # ==============================================================
   test:
-    name: "Run Addon Tests (Shard ${{ matrix.shard_index }}/3)"
+    name: "Run Playwright Tests (Shard ${{ matrix.shard_index }}/3)"
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
@@ -64,9 +63,9 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
 
-      # ── Step 5: Execute ADDON tests for this shard ────────────
-      - name: Run Addon Tests (Shard ${{ matrix.shard_index }}/3)
-        run: npx playwright test tests/addon/ --project=chromium --shard=${{ matrix.shard_index }}/3
+      # ── Step 5: Execute ALL tests for this shard ──────────────
+      - name: Run Playwright Tests (Shard ${{ matrix.shard_index }}/3)
+        run: npx playwright test --project=chromium --shard=${{ matrix.shard_index }}/3
         continue-on-error: true   # Always upload results even if tests fail
 
       # ── Step 6: Save raw Allure results as artifact ───────────
@@ -74,7 +73,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-addon-shard-${{ matrix.shard_index }}
+          name: allure-results-shard-${{ matrix.shard_index }}
           path: allure-results
           if-no-files-found: warn
           retention-days: 14
@@ -84,7 +83,7 @@ jobs:
   # Runs after ALL 3 shards finish (pass or fail)
   # ==============================================================
   report:
-    name: "Generate & Publish Addon Allure Report"
+    name: "Generate & Publish Allure Report"
     if: ${{ always() }}
     needs: [test]
     timeout-minutes: 30
@@ -111,7 +110,7 @@ jobs:
       - name: Download All Allure Results
         uses: actions/download-artifact@v4
         with:
-          pattern: allure-results-addon-shard-*
+          pattern: allure-results-shard-*
           merge-multiple: true
           path: allure-results
 
@@ -132,7 +131,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-addon
+          name: allure-report
           path: allure-report
           if-no-files-found: warn
           retention-days: 14
