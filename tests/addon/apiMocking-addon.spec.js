@@ -1,4 +1,4 @@
-const { test, expect } = require('../fixtures/pageFixture');
+const { test, expect } = require('../../fixtures/pageFixture');
 
 test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
@@ -6,7 +6,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     // TC_API_001 - Pre-Auth Login Injection Speed Runs
     // ==================================================
     test('TC_API_001 - Pre-Auth Login Injection Speed Runs', async ({ page }) => {
-        // Intercept the dashboard request and mock the authenticated page response
         await page.route('**/index.php?route=account/account', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -15,10 +14,8 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
             });
         });
 
-        // Navigate directly to Dashboard
         await page.goto('index.php?route=account/account');
 
-        // Verify session opens dynamically and page displays Dashboard without UI login forms
         await expect(page).toHaveURL(/route=account\/account/);
         await expect(page.locator('#content h2').first()).toHaveText('My Account');
     });
@@ -27,7 +24,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     // TC_API_002 - Mock Payment API HTTP 500 Failure
     // ==================================================
     test('TC_API_002 - Mock Payment API HTTP 500 Failure', async ({ page, checkoutPage }) => {
-        // Intercept checkout page and return a mock template with identical interactive IDs
         await page.route('**/index.php?route=checkout/checkout**', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -53,7 +49,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
             });
         });
 
-        // Intercept checkout save endpoint and mock HTTP 500 response
         await page.route('**/index.php?route=extension/maza/checkout/save**', async (route) => {
             await route.fulfill({
                 status: 500,
@@ -65,7 +60,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
         await page.goto('index.php?route=checkout/checkout');
         await page.click('#button-save');
 
-        // Expected: clean user-friendly alert banner displays
         await expect(checkoutPage.alertDanger).toBeVisible();
         await expect(checkoutPage.alertDanger).toContainText('Payment gateway connection failed');
     });
@@ -74,7 +68,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     // TC_API_003 - Mock Empty Product Catalog Response
     // ==================================================
     test('TC_API_003 - Mock Empty Product Catalog Response', async ({ page, searchPage }) => {
-        // Intercept catalog endpoint and mock server response returning empty state HTML directly (prevents recursion)
         await page.route('**/index.php?route=product/search**', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -85,7 +78,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
         await searchPage.searchViaURL('Mac');
 
-        // Expected: Browse page displays a clean placeholder message without crashing
         await expect(searchPage.noResultsMsg).toBeVisible();
         await expect(searchPage.noResultsMsg).toHaveText(/There is no product that matches the search criteria|no product/i);
     });
@@ -94,7 +86,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     // TC_API_004 - Search Suggestion API Interception Mock
     // ==================================================
     test('TC_API_004 - Search Suggestion API Interception Mock', async ({ page, homePage }) => {
-        // Intercept autocomplete suggestions API and return custom suggestions list
         await page.route('**/autocomplete**', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -108,7 +99,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
         await homePage.navigate();
         await homePage.searchBar.fill('mac');
 
-        // Programmatically guarantee autocomplete suggestion element displays
         await page.evaluate(() => {
             let el = document.querySelector('.search-autocomplete, .dropdown-menu');
             if (!el) {
@@ -122,17 +112,14 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
             }
         });
 
-        // Resolve strict mode violation by using first()
         const dropdown = page.locator('.dropdown-menu.show, .dropdown-menu.autocomplete, .search-autocomplete').first();
         await expect(dropdown).toContainText('Mocked Special Superphone');
     });
-
 
     // ==================================================
     // TC_API_005 - HTTP 429 Rate-Limiting Simulation
     // ==================================================
     test('TC_API_005 - HTTP 429 Rate-Limiting Simulation', async ({ page }) => {
-        // Intercept cart addition and mock 429 Too Many Requests response
         await page.route('**/checkout/cart/add', async (route) => {
             await route.fulfill({
                 status: 429,
@@ -143,7 +130,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
         await page.goto('');
         await page.evaluate(() => {
-            // Directly inject warning banner on page to verify frontend handling
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-danger alert-dismissible show';
             alertDiv.innerHTML = 'Warning: Too Many Requests - Please slow down and try again.';
@@ -159,7 +145,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     // TC_API_006 - Offline Status Toast Message Mocking
     // ==================================================
     test('TC_API_006 - Offline Status Toast Message Mocking', async ({ page }) => {
-        // Mock connection loss during cart additions
         await page.route('**/checkout/cart/add', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -176,18 +161,15 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
             document.body.insertBefore(alertDiv, document.body.firstChild);
         });
 
-        // Filter toast to specifically look for "Network Offline" to avoid collision with existing success toasts
         const toast = page.locator('.alert-dismissible, .toast, .alert-danger').filter({ hasText: 'Network Offline' }).first();
         await expect(toast).toBeVisible();
         await expect(toast).toHaveText(/Network Offline - Cart cannot be saved/i);
     });
 
-
     // ==================================================
     // TC_API_007 - Mock Empty Invoice Data Triggers Error
     // ==================================================
     test('TC_API_007 - Mock Empty Invoice Data Triggers Error', async ({ page }) => {
-        // Intercept invoice details page and mock blank / invalid payload response
         await page.route('**/index.php?route=account/order/invoice**', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -198,7 +180,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
         await page.goto('index.php?route=account/order/invoice&order_id=9999');
 
-        // Expected: PDF/Invoice view handles error gracefully and shows error alert
         const errorAlert = page.locator('.alert-danger, .error');
         await expect(errorAlert).toBeVisible();
         await expect(errorAlert).toContainText('Invoice data is empty');
@@ -210,7 +191,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     test('TC_API_008 - Intercept And Inject Security Tokens', async ({ page }) => {
         let tokenInjected = false;
 
-        // Dynamically inject custom headers into outbound network requests
         await page.route('**/index.php?route=account/account', async (route) => {
             const headers = {
                 ...route.request().headers(),
@@ -222,8 +202,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
         });
 
         await page.goto('index.php?route=account/account');
-
-        // Expected: Outbound request headers successfully modified
         expect(tokenInjected).toBeTruthy();
     });
 
@@ -231,7 +209,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     // TC_API_009 - Block Malicious Script Tag Injection
     // ==================================================
     test('TC_API_009 - Block Malicious Script Tag Injection', async ({ page }) => {
-        // Intercept profile edit page load and return mock template containing security validator
         await page.route('**/index.php?route=account/edit', async (route) => {
             if (route.request().method() === 'POST') {
                 await route.fulfill({
@@ -261,7 +238,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
         await page.fill('#input-firstname', '<script>alert("XSS")</script>');
         await page.click('input[value="Continue"]');
 
-        // Expected: Client/Server validation rejects malicious script with format errors
         const errorAlert = page.locator('.alert-danger, .text-danger').first();
         await expect(errorAlert).toBeVisible();
         await expect(errorAlert).toContainText(/script|First Name/i);
@@ -273,7 +249,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     test('TC_API_010 - Block Third-Party Tracking Scripts', async ({ page }) => {
         let trackingScriptBlocked = false;
 
-        // Block outgoing tracking and analytical scripts
         await page.route('**/*', async (route) => {
             const url = route.request().url();
             if (url.includes('google-analytics') || url.includes('analytics.js') || url.includes('googletagmanager')) {
@@ -286,13 +261,11 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
         await page.goto('');
 
-        // Trigger a fake analytical load to verify blocking rule
         await page.evaluate(() => {
             fetch('https://www.google-analytics.com/analytics.js').catch(() => {});
         });
         await page.waitForTimeout(500);
 
-        // Expected: analytical script successfully intercepted and aborted
         expect(trackingScriptBlocked).toBeTruthy();
     });
 
@@ -302,7 +275,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     test('TC_API_011 - Mock Slow Database Response Delay', async ({ page }) => {
         let delayTriggered = false;
 
-        // Intercept category load AJAX request and delay response (uses absolute slow-db-request)
         await page.route('**/slow-db-request**', async (route) => {
             delayTriggered = true;
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -315,23 +287,18 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
         await page.goto('');
 
-        // Trigger action that makes AJAX fetch
         await page.evaluate(() => {
             fetch('slow-db-request').catch(() => {});
         });
 
         await page.waitForTimeout(500);
-
-        // Expected: delay intercepted successfully
         expect(delayTriggered).toBeTruthy();
     });
-
 
     // ==================================================
     // TC_API_012 - Mock Dynamic Tax Rate Updates Cart
     // ==================================================
     test('TC_API_012 - Mock Dynamic Tax Rate Updates Cart', async ({ page }) => {
-        // Intercept checkout confirm and return mock HTML with Eco Tax $55.55 directly
         await page.route('**/index.php?route=extension/maza/checkout/confirm**', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -342,7 +309,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
         await page.goto('index.php?route=extension/maza/checkout/confirm');
 
-        // Expected: Cart totals adjust and display values matching the mocked rate additions
         const taxCell = page.locator('td:has-text("$55.55")');
         await expect(taxCell).toBeVisible();
     });
@@ -351,7 +317,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
     // TC_API_013 - Mock Successful Checkout Billing Response
     // ==================================================
     test('TC_API_013 - Mock Successful Checkout Billing Response', async ({ page, checkoutPage }) => {
-        // Intercept success page and return a clean success confirmation template
         await page.route('**/index.php?route=checkout/success**', async (route) => {
             await route.fulfill({
                 status: 200,
@@ -362,7 +327,6 @@ test.describe('MODULE 10 - API INTERCEPTION & MOCKING TESTS', () => {
 
         await page.goto('index.php?route=checkout/success');
 
-        // Expected: Successful page title rendered
         await expect(checkoutPage.successHeading).toHaveText(/Your order has been placed!/i);
     });
 

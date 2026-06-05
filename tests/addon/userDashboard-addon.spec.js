@@ -1,8 +1,8 @@
 require('dotenv').config();
 
-const { test, expect } = require('../fixtures/pageFixture');
-const { HelperUtils } = require('../utils/HelperUtils');
-const { RegisterPage } = require('../pages/RegisterPage');
+const { test, expect } = require('../../fixtures/pageFixture');
+const { HelperUtils } = require('../../utils/HelperUtils');
+const { RegisterPage } = require('../../pages/RegisterPage');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -168,8 +168,6 @@ test.describe('MODULE 07 - USER DASHBOARD TESTS', () => {
         let deleteBtns = page.getByRole('link', { name: 'Delete' });
         let count = await deleteBtns.count();
 
-        // Self-healing: If there's only 1 address (which happens on suite retries), OpenCart's database policy
-        // blocks deletion. We dynamically add a temporary second address first!
         if (count === 0 || count === 1) {
             const addAddressBtn = page.locator('a[href*="route=account/address/add"], a:has-text("New Address")').first();
             await addAddressBtn.click();
@@ -183,7 +181,6 @@ test.describe('MODULE 07 - USER DASHBOARD TESTS', () => {
             await page.locator('#input-country').selectOption({ label: 'India' });
             await page.waitForTimeout(1000);
 
-            // Wait for zone options
             await page.waitForFunction(() => {
                 const el = document.querySelector('#input-zone');
                 return el && el.options.length > 1;
@@ -197,7 +194,6 @@ test.describe('MODULE 07 - USER DASHBOARD TESTS', () => {
             await page.locator('input[value="Continue"]').click();
             await page.waitForLoadState('domcontentloaded');
 
-            // Refresh list
             deleteBtns = page.getByRole('link', { name: 'Delete' });
             count = await deleteBtns.count();
         }
@@ -230,16 +226,13 @@ test.describe('MODULE 07 - USER DASHBOARD TESTS', () => {
         await expect(alert).toBeVisible();
         await expect(alert).toHaveText(/Success: Your password has been successfully updated\./);
 
-        // Logout
         await dashboardPage.clickLogout();
         await page.waitForLoadState('domcontentloaded');
 
-        // Attempt re-login
         await loginPage.navigate();
         await loginPage.login(sharedEmail, newPassword);
         await expect(page).toHaveURL(/account\/account/, { timeout: 15000 });
 
-        // Restore the original password so that subsequent tests (which use 'beforeEach' with the original password) don't fail
         await dashboardPage.clickPasswordChange();
         await page.waitForLoadState('domcontentloaded');
         await page.locator('#input-password').fill(password);
@@ -255,7 +248,6 @@ test.describe('MODULE 07 - USER DASHBOARD TESTS', () => {
     // TC_DSH_007 - Dashboard Counters Display Order Counts
     // ==================================================
     test('TC_DSH_007 - Dashboard Counters Display Order Counts', async ({ page }) => {
-        // Let's dump all text contents of the main page content to understand Maza theme layout
         const contentText = await page.locator('#content').innerText();
         console.log('===== ACCOUNT DASHBOARD CONTENT DUMP =====');
         console.log(contentText);

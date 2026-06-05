@@ -8,7 +8,14 @@
     "test:headed": "npx playwright test --headed",
     "test:ui": "npx playwright test --ui",
     "test:debug": "npx playwright test --debug",
-    "test:ci": "npx playwright test --project=chromium",
+
+    "test:core": "npx playwright test tests/auth.spec.js tests/homepage.spec.js tests/search.spec.js tests/cart.spec.js tests/checkout.spec.js tests/wishlist.spec.js",
+    "test:core:headed": "npx playwright test tests/auth.spec.js tests/homepage.spec.js tests/search.spec.js tests/cart.spec.js tests/checkout.spec.js tests/wishlist.spec.js --headed",
+    "test:ci": "npx playwright test tests/auth.spec.js tests/homepage.spec.js tests/search.spec.js tests/cart.spec.js tests/checkout.spec.js tests/wishlist.spec.js --project=chromium",
+
+    "test:addon": "npx playwright test tests/addon/",
+    "test:addon:ci": "npx playwright test tests/addon/ --project=chromium",
+
     "allure:generate": "npx allure generate allure-results -o allure-report",
     "allure:open": "npx allure open allure-report"
   },
